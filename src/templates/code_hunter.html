@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Code Hunter | Cyber Lab Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050a14;
+            --panel: #111;
+            --accent: #ff00ff;
+            --text: #eee;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Roboto Mono', monospace;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-family: 'Orbitron';
+            text-align: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            color: #0f0;
+            border: 1px solid #333;
+            padding: 10px;
+            font-family: inherit;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-family: 'Orbitron';
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .issue {
+            border-left: 3px solid #ff3333;
+            background: #1a0505;
+            padding: 10px;
+            margin-bottom: 5px;
+        }
+
+        .score-box {
+            text-align: center;
+            font-size: 2rem;
+            margin: 20px 0;
+            font-family: 'Orbitron';
+        }
+
+        /* GUIA TÁTICO */
+        .guide-box {
+            border: 1px solid #333;
+            background: #0a0a0a;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .guide-header {
+            background: #1a1a1a;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .guide-content {
+            padding: 15px;
+            display: none;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .guide-content h4 {
+            color: var(--accent);
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- GUIA TÁTICO -->
+        <div class="guide-box">
+            <div class="guide-header" onclick="toggleGuide()">
+                <span>📘 <strong>MANUAL DE OPERAÇÕES: CODE HUNTER</strong></span>
+                <span>▼</span>
+            </div>
+            <div class="guide-content" id="guideContent">
+                <h4>🎯 Para que serve?</h4>
+                <p>Scanner estático (SAST) que analisa código fonte em busca de falhas de segurança óbvias antes que o
+                    código vá para produção.</p>
+
+                <h4>⚙️ Como usar?</h4>
+                <ol>
+                    <li>Cole um trecho de código (Python, JS, PHP) na caixa abaixo.</li>
+                    <li>Clique em "ANALYZE CODE".</li>
+                    <li>Veja os alertas de segurança e a nota final.</li>
+                </ol>
+
+                <h4>⚠️ Principais Riscos Detectados</h4>
+                <ul>
+                    <li><strong>API Keys Expostas:</strong> Permitem que hackers usem seus serviços pagos (AWS, Stripe)
+                        e roubem dados.</li>
+                    <li><strong>Funções Perigosas (eval/exec):</strong> Permitem execução remota de código (RCE), o
+                        ataque mais crítico possível.</li>
+                    <li><strong>Senhas Hardcoded:</strong> Se o código vazar (GitHub), suas credenciais vazam junto.
+                    </li>
+                </ul>
+
+                <h4>🛡️ Por que corrigir?</h4>
+                <p>Remover chaves do código e usar variáveis de ambiente (.env) é a regra #1 de segurança moderna. Evita
+                    prejuízos de milhares de dólares em nuvem.</p>
+            </div>
+        </div>
+
+
+        <h1>👾 CODE HUNTER</h1>
+
+        <!-- File Upload Option -->
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; color: var(--accent);">📁 Opção 1: Upload de Arquivo
+                (Recomendado para arquivos grandes)</label>
+            <input type="file" id="fileInput" accept=".py,.js,.php,.java,.txt,.json,.xml"
+                style="background: #000; color: #0f0; border: 1px solid #333; padding: 10px; width: 100%;">
+            <button onclick="analyzeFile()" style="margin-top: 10px;">SCANNEAR ARQUIVO</button>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0; color: #666;">── OU ──</div>
+
+        <label style="display: block; margin-bottom: 5px; color: var(--accent);">✏️ Opção 2: Colar Código
+            Diretamente</label>
+        <textarea id="codeInput" placeholder="// Cole seu código aqui para análise de segurança..."></textarea>
+        <button onclick="analyze()">SCANNEAR CÓDIGO</button>
+
+        <div class="score-box" id="score"></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function toggleGuide() {
+            const c = document.getElementById('guideContent');
+            c.style.display = c.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+
+        async function analyzeFile() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) return alert("Selecione um arquivo primeiro");
+
+            const btn = event.target;
+            btn.innerHTML = "SCANNING...";
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                const resp = await fetch('/tools/code-analyze-file', { method: 'POST', body: formData });
+                const data = await resp.json();
+
+                displayResults(data);
+            } catch (error) {
+                alert("Erro ao processar arquivo: " + error);
+            } finally {
+                btn.innerHTML = "SCANNEAR ARQUIVO";
+            }
+        }
+
+        async function analyze() {
+            const code = document.getElementById('codeInput').value;
+            if (!code) return alert("Code empty");
+
+            const btn = event.target;
+            btn.innerHTML = "SCANNING...";
+
+            try {
+                const formData = new FormData();
+                formData.append('code', code);
+                const resp = await fetch('/tools/code-analyze', { method: 'POST', body: formData });
+                const data = await resp.json();
+
+                displayResults(data);
+            } catch (error) {
+                alert("Erro: " + error);
+            } finally {
+                btn.innerHTML = "SCANNEAR CÓDIGO";
+            }
+        }
+
+        function displayResults(data) {
+            if (data.error) {
+                document.getElementById('results').innerHTML = `<div class='issue' style='border-color:red'>❌ Error: ${data.error}</div>`;
+                return;
+            }
+
+            const scoreDiv = document.getElementById('score');
+            scoreDiv.textContent = `Security Score: ${data.score}/100`;
+            scoreDiv.style.color = data.score > 80 ? '#0f0' : (data.score > 50 ? '#ff0' : '#f00');
+
+            const resDiv = document.getElementById('results');
+            resDiv.innerHTML = '';
+
+            if (!data.issues || data.issues.length === 0) {
+                resDiv.innerHTML = "<div style='text-align:center; color:#0f0'>✅ No threats detected.</div>";
+            } else {
+                data.issues.forEach(i => {
+                    const div = document.createElement('div');
+                    div.className = 'issue';
+                    div.innerHTML = `
+                        <div style="color:#ff5555; font-weight:bold; font-size:1.1rem; margin-bottom:10px">
+                            🚨 LINE ${i.line}: ${i.name || i.category}
+                        </div>
+                        
+                        <div style="background:#0a0a0a; padding:10px; margin-bottom:10px; border-left:3px solid #ff5555">
+                            <strong style="color:#ff9">🔍 Por quê?</strong><br>
+                            ${i.description || 'Vulnerabilidade detectada'}
+                        </div>
+                        
+                        ${i.how_exploited ? `
+                        <div style="background:#0a0a0a; padding:10px; margin-bottom:10px; border-left:3px solid #f90">
+                            <strong style="color:#f90">⚔️ Como é Explorado?</strong><br>
+                            ${i.how_exploited}
+                        </div>
+                        ` : ''}
+                        
+                        ${i.where_common ? `
+                        <div style="background:#0a0a0a; padding:10px; margin-bottom:10px; border-left:3px solid #0cf">
+                            <strong style="color:#0cf">📍 Onde Aparece?</strong><br>
+                            ${i.where_common}
+                        </div>
+                        ` : ''}
+                        
+                        ${i.fix ? `
+                        <div style="background:#0a0a0a; padding:10px; margin-bottom:10px; border-left:3px solid #0f0">
+                            <strong style="color:#0f0">✅ Como Corrigir?</strong><br>
+                            ${i.fix}
+                        </div>
+                        ` : ''}
+                        
+                        ${i.poc ? `
+                        <details style="margin-top:15px; background:#111; padding:10px; border:1px solid #333; border-radius:5px; cursor:pointer">
+                            <summary style="color:var(--accent); font-weight:bold; user-select:none">🧪 Ver Prova de Conceito (PoC)</summary>
+                            <div style="margin-top:15px">
+                                <div style="margin-bottom:15px">
+                                    <strong style="color:#f55">❌ Código Vulnerável:</strong>
+                                    <pre style="background:#000; padding:10px; margin-top:5px; overflow-x:auto; border-left:3px solid #f55"><code>${escapeHtml(i.poc.vulnerable)}</code></pre>
+                                </div>
+                                <div style="margin-bottom:15px">
+                                    <strong style="color:#f90">⚔️ Ataque Simulado:</strong>
+                                    <pre style="background:#000; padding:10px; margin-top:5px; overflow-x:auto; border-left:3px solid #f90"><code>${escapeHtml(i.poc.exploit)}</code></pre>
+                                </div>
+                                <div>
+                                    <strong style="color:#0f0">✅ Código Corrigido:</strong>
+                                    <pre style="background:#000; padding:10px; margin-top:5px; overflow-x:auto; border-left:3px solid #0f0"><code>${escapeHtml(i.poc.fixed)}</code></pre>
+                                </div>
+                            </div>
+                        </details>
+                        ` : ''}
+                        
+                        <code style="background:#000; padding:8px; display:block; margin-top:10px; color:#aaa; font-size:0.85rem; overflow-x:auto">
+                            ${i.content}
+                        </code>
+                    `;
+                    resDiv.appendChild(div);
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

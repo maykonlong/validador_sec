@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hash Cracker | Cyber Lab Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #0f0;
+            font-family: 'Roboto Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* Alterado de height para min-height */
+            padding: 40px 0;
+            /* Adicionado padding para scroll */
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .box {
+            width: 600px;
+            padding: 40px;
+            border: 1px solid #333;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+            background: #000;
+        }
+
+        h1 {
+            font-family: 'Orbitron';
+            text-align: center;
+            margin-top: 0;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
+            font-family: 'Roboto Mono';
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #0f0;
+            color: #000;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Orbitron';
+        }
+
+        button:hover {
+            background: #0c0;
+        }
+
+        #result {
+            margin-top: 20px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            display: none;
+        }
+
+        .cracked {
+            color: #0f0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 1px solid #0f0;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .fail {
+            color: #f00;
+            border: 1px solid #f00;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        .guide-box {
+            width: 600px;
+            border: 1px solid #333;
+            background: #000;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .guide-header {
+            background: #111;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .guide-content {
+            padding: 15px;
+            display: none;
+            line-height: 1.6;
+            color: #ccc;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        .guide-content h4 {
+            color: #0f0;
+            margin: 15px 0 5px;
+        }
+    </style>
+
+    <div style="display:flex; flex-direction:column; align-items:center;">
+        <!-- GUIA DE USO -->
+        <div class="guide-box">
+            <div class="guide-header"
+                onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">
+                <span>📘 <strong>MANUAL TÁTICO: HASH CRACKER</strong></span><span>▼</span>
+            </div>
+            <div class="guide-content">
+                <h4>🎯 Objetivo</h4>
+                <p>Testar a força de um hash de senha (MD5/SHA) para ver se ele é facilmente quebrável.</p>
+                <h4>⚙️ Como Usar</h4>
+                <ol>
+                    <li>Cole o hash encontrado (ex: 32 caracteres para MD5).</li>
+                    <li>Clique em "QUEBRAR SENHA".</li>
+                    <li>O sistema testará contra uma lista de senhas comuns.</li>
+                </ol>
+                <h4>⚠️ Por que corrigir?</h4>
+                <p>Hashes antigos (MD5/SHA1) são quebrados em segundos por placas de vídeo modernas. Se você usa isso,
+                    suas senhas já vazaram. Migre para <strong>Bcrypt ou Argon2</strong>.</p>
+            </div>
+        </div>
+
+        <div class="box">
+            <h1>🔓 HASH CRACKER</h1>
+            <div id="hw-info"
+                style="color: #444; font-size: 0.8rem; text-align: right; margin-bottom: 20px; font-family:'Roboto Mono'">
+                🚀 Hardware Detectado: <span id="cpu-cores" style="color:#0f0">?</span> Cores (Otimizado)
+            </div>
+
+            <p>Insira MD5, SHA1 ou SHA256:</p>
+            <input type="text" id="hashInput" placeholder="e.g. 5e884898da28047151d0e56f8dc62927">
+            <button onclick="crack()">QUEBRAR SENHA</button>
+
+            <div id="result">
+                <div id="status"></div>
+                <div style="margin-top:10px">Tipo: <span id="type">-</span></div>
+                <div>Senha: <span id="pass">-</span></div>
+                <div style="font-size:0.8em; color:#666; margin-top:5px" id="perf-stats"></div>
+            </div>
+            <!-- SEPARATOR -->
+            <div style="margin: 40px 0; border-top: 1px dashed #333; position: relative;">
+                <span
+                    style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #000; padding: 0 10px; color: #555;">OU</span>
+            </div>
+
+            <!-- FILE CRACKER SECTION -->
+            <h1
+                style="color: #00aeff; font-size: 1.8rem; text-align: center; margin-bottom: 5px; font-family: 'Orbitron';">
+                FILE CRACKER</h1>
+            <div style="text-align: center; color: #00aeff; margin-bottom: 20px; font-size: 0.9rem;">
+                🔓 QUEBRA DE SENHA (PFX / PEM / KEY / PDF / ZIP)
+            </div>
+
+            <input type="file" id="ticketFile" style="border-color: #00aeff; color: #00aeff; background: #001122;">
+
+            <button onclick="crackFile()" id="btnFile"
+                style="background: #00aeff; color: #000; box-shadow: 0 0 15px rgba(0, 174, 255, 0.3);">
+                DESBLOQUEAR ARQUIVO
+            </button>
+
+            <div id="fileResult" style="margin-top: 20px; text-align: center; display: none;"></div>
+        </div>
+
+        <script>
+            async function crackFile() {
+                const fileInput = document.getElementById('ticketFile');
+                const resultDiv = document.getElementById('fileResult');
+
+                if (fileInput.files.length === 0) {
+                    alert('Selecione um arquivo primeiro!');
+                    return;
+                }
+
+                const btn = document.getElementById('btnFile');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = "🔨 MARTELANDO... (Isso pode demorar)";
+                btn.disabled = true;
+
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div style="color:#00aeff">Iniciando força bruta...<br>Testando Milhões de combinações...</div>';
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                try {
+                    const resp = await fetch('/tools/file-crack', { method: 'POST', body: formData });
+                    const data = await resp.json();
+
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+
+                    if (data.status === 'success') {
+                        resultDiv.innerHTML = `
+                        <div style="border:1px solid #00ff00; padding:20px; background:rgba(0,255,0,0.05); margin-top:15px;">
+                            <div style="font-size:2em;">🔓 SUCESSO!</div>
+                            <div style="margin:10px 0; color:#aaa;">A senha do arquivo é:</div>
+                            <div style="font-size:1.8em; color:#fff; background:#111; padding:10px; border:1px dashed #00ff00; word-break:break-all;">${data.password}</div>
+                            <div style="margin-top:10px; font-size:0.8em; color:#00ff00;">Tentativas: ${data.attempts} | Tipo: ${data.type || 'Arquivo'}</div>
+                        </div>
+                     `;
+                    } else if (data.status === 'failed') {
+                        resultDiv.innerHTML = `
+                        <div style="border:1px solid #ff0000; padding:20px; background:rgba(255,0,0,0.05); margin-top:15px;">
+                            <div style="font-size:1.5em; color:#ff0000;">🔒 FALHA</div>
+                            <div style="color:#aaa;">Senha não encontrada com os métodos atuais.</div>
+                            <div style="font-size:0.8em; margin-top:5px; color:#666;">Foram testadas ${data.attempts} combinações.</div>
+                        </div>
+                     `;
+                    } else {
+                        resultDiv.innerHTML = `<div style="color:red; border:1px solid red; padding:10px; margin-top:15px;">Erro: ${data.message || data.error}</div>`;
+                    }
+
+                } catch (e) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    resultDiv.innerHTML = `<div style="color:red">Erro de conexão: ${e}</div>`;
+                }
+            }
+            // Detect HW
+            const threads = navigator.hardwareConcurrency || 2;
+            document.getElementById('cpu-cores').innerText = threads;
+
+            async function crack() {
+                const h = document.getElementById('hashInput').value;
+                if (!h) return;
+
+                const btn = document.querySelector('button');
+                btn.innerHTML = "Processando em " + threads + " threads...";
+                btn.disabled = true;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('hash', h);
+                    formData.append('workers', threads);
+
+                    const resp = await fetch('/tools/hash-crack', { method: 'POST', body: formData });
+                    const data = await resp.json();
+
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('type').textContent = data.type || "Desconhecido";
+
+                    const statusDiv = document.getElementById('status');
+                    if (data.cracked) {
+                        statusDiv.className = 'cracked';
+                        statusDiv.innerHTML = "SUCESSO! SENHA ENCONTRADA";
+                        document.getElementById('pass').textContent = data.password;
+                    } else {
+                        statusDiv.className = 'fail';
+                        statusDiv.innerHTML = "FALHA NA QUEBRA (Wordlist Rápida)";
+                        document.getElementById('pass').textContent = "---";
+                    }
+
+                    if (data.analysis) {
+                        document.getElementById('perf-stats').innerText = data.analysis;
+                    }
+
+                } catch (e) {
+                    alert(e);
+                } finally {
+                    btn.innerHTML = "QUEBRAR SENHA";
+                    btn.disabled = false;
+                }
+            }
+        </script>
+</body>
+
+</html>

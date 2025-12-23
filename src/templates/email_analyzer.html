@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Email Hunter | Cyber Lab Elite</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #050a14;
+            --bg-secondary: #0a1220;
+            --accent-blue: #0088ff;
+            --accent-red: #ff3333;
+            --accent-green: #00ff9d;
+            --text-main: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: 'Roboto Mono', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent-blue);
+        }
+
+        .input-area {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border: 1px solid #1f2a40;
+            border-radius: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            color: #00ff9d;
+            border: 1px solid #333;
+            padding: 10px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .btn-analyze {
+            width: 100%;
+            padding: 15px;
+            margin-top: 15px;
+            background: linear-gradient(90deg, #0044ff, #0088ff);
+            color: white;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-analyze:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 15px rgba(0, 136, 255, 0.4);
+        }
+
+        /* RESULTADOS */
+        #results {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .verdict-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 20px;
+        }
+
+        .safe {
+            background: rgba(0, 255, 157, 0.1);
+            border: 2px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .danger {
+            background: rgba(255, 51, 51, 0.1);
+            border: 2px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .grid-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .info-card {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .value {
+            font-size: 1.1rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- GUIA DE USO -->
+        <style>
+            .guide-box {
+                border: 1px solid #333;
+                background: #0a0a0a;
+                margin-bottom: 20px;
+                border-radius: 5px;
+                overflow: hidden;
+                font-family: 'Roboto Mono'
+            }
+
+            .guide-header {
+                background: #111;
+                padding: 10px;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                color: #ccc;
+                align-items: center
+            }
+
+            .guide-content {
+                padding: 15px;
+                display: none;
+                line-height: 1.6;
+                color: #ccc;
+                font-size: 0.9rem
+            }
+
+            .guide-content h4 {
+                color: var(--accent-blue);
+                margin: 15px 0 5px
+            }
+        </style>
+        <div class="guide-box">
+            <div class="guide-header"
+                onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">
+                <span>📘 <strong>MANUAL TÁTICO: EMAIL FORENSICS</strong></span><span>▼</span>
+            </div>
+            <div class="guide-content">
+                <h4>🎯 Objetivo</h4>
+                <p>Identificar e-mails falsos (Spoofing) e tentativas de Phishing antes de clicar em links.</p>
+                <h4>⚙️ Como Usar</h4>
+                <ol>
+                    <li>No seu e-mail (Gmail/Outlook), procure a opção <strong>"Ver Original"</strong> ou "View Source".
+                    </li>
+                    <li>Copie todo o bloco de texto do cabeçalho.</li>
+                    <li>Cole na caixa abaixo e clique em analisar.</li>
+                </ol>
+                <h4>⚠️ O que os resultados significam?</h4>
+                <ul>
+                    <li><strong>SPF/DKIM/DMARC FAIL:</strong> Alerta Vermelho! O servidor que enviou o e-mail não tem
+                        autorização da empresa. Provável golpe.</li>
+                    <li><strong>Return-Path Diferente:</strong> Técnica usada por spammers para esconder a origem real.
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> Email Hunter</h1>
+            <p>Analisador Defensivo de Phishing (Header Forensics)</p>
+        </div>
+
+        <div class="input-area">
+            <h3 style="margin-top:0">Cole o Cabeçalho (Header) do E-mail:</h3>
+            <textarea id="headerInput" placeholder="Ex: Received: from mail.google.com..."></textarea>
+            <button class="btn-analyze" onclick="analyzeHeader()">ANALISAR AMEAÇA 🔍</button>
+        </div>
+
+        <div id="results">
+            <div id="verdict-box" class="verdict-card">
+                <h2 id="final-verdict">ANALISANDO...</h2>
+                <div id="risk-score">Risco: 0/100</div>
+            </div>
+
+            <div class="grid-info">
+                <div class="info-card">
+                    <div class="label">Remetente (From)</div>
+                    <div class="value" id="res-from">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">IP de Origem Real</div>
+                    <div class="value" id="res-ip">-</div>
+                    <a id="ip-link" href="#" target="_blank" style="color:var(--accent-blue); font-size:0.8rem">Rastrear
+                        IP</a>
+                </div>
+                <div class="info-card">
+                    <div class="label">Autenticação de Segurança</div>
+                    <div class="value">
+                        <div>SPF: <span id="res-spf">-</span></div>
+                        <div>DKIM: <span id="res-dkim">-</span></div>
+                        <div>DMARC: <span id="res-dmarc">-</span></div>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Alertas de Risco</div>
+                    <div class="value" id="res-warnings" style="color: var(--accent-red); font-size: 0.9rem;">
+                        Nenhum
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function analyzeHeader() {
+            const text = document.getElementById('headerInput').value;
+            if (!text) return alert("Cole um header primeiro!");
+
+            const btn = document.querySelector('.btn-analyze');
+            btn.innerHTML = "PROCESSANDO...";
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('header', text);
+
+                const resp = await fetch('/tools/email-analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await resp.json();
+
+                // Renderizar
+                document.getElementById('results').style.display = 'block';
+
+                // Veredito
+                const vBox = document.getElementById('verdict-box');
+                const vText = document.getElementById('final-verdict');
+                if (data.risk_score > 50) {
+                    vBox.className = 'verdict-card danger';
+                    vText.textContent = `🚫 ${data.verdict}`;
+                } else {
+                    vBox.className = 'verdict-card safe';
+                    vText.textContent = `✅ ${data.verdict}`;
+                }
+                document.getElementById('risk-score').textContent = `Score de Risco: ${data.risk_score}/100`;
+
+                // Dados
+                document.getElementById('res-from').textContent = data.from || "Não identificado";
+                document.getElementById('res-ip').textContent = data.origin_ip || "Oculto/Proxy";
+                document.getElementById('ip-link').href = `https://whatismyipaddress.com/ip/${data.origin_ip}`;
+
+                // Security
+                setSecurityColor('res-spf', data.security_checks.spf);
+                setSecurityColor('res-dkim', data.security_checks.dkim);
+                setSecurityColor('res-dmarc', data.security_checks.dmarc);
+
+                // Avisos
+                const warnArea = document.getElementById('res-warnings');
+                if (data.warnings.length > 0) {
+                    warnArea.innerHTML = data.warnings.map(w => `<div>⚠️ ${w}</div>`).join('');
+                } else {
+                    warnArea.innerHTML = "<span style='color:#00ff9d'>Nenhuma anomalia detectada.</span>";
+                }
+
+            } catch (e) {
+                alert("Erro ao analisar: " + e.message);
+            } finally {
+                btn.innerHTML = "ANALISAR AMEAÇA 🔍";
+                btn.disabled = false;
+            }
+        }
+
+        function setSecurityColor(id, status) {
+            const el = document.getElementById(id);
+            el.textContent = status;
+            if (status === 'PASS') el.style.color = '#00ff9d';
+            else if (status === 'FAIL') el.style.color = '#ff3333';
+            else el.style.color = '#666';
+        }
+    </script>
+</body>
+
+</html>

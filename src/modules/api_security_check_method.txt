@@ -1,0 +1,41 @@
+    def check_api_security(self):
+        """
+        API Security Scanner
+        Tests for OWASP API Security Top 10 vulnerabilities
+        """
+        try:
+            # Check if target is an API
+            if self.api_scanner.is_api_endpoint(self.target_url):
+                api_findings = self.api_scanner.scan_endpoint(self.target_url)
+                
+                for finding in api_findings:
+                    self._add_result(
+                        finding['vulnerability'],
+                        finding['status'],
+                        finding['details'],
+                        finding['severity'],
+                        finding['methodology'],
+                        finding['manual_test'],
+                        finding['risk'],
+                        finding['category']
+                    )
+            
+            # Also test discovered API endpoints
+            if self.discovered_params:
+                for url, params in self.discovered_params:
+                    if self.api_scanner.is_api_endpoint(url):
+                        api_findings = self.api_scanner.scan_endpoint(url)
+                        
+                        for finding in api_findings:
+                            self._add_result(
+                                finding['vulnerability'],
+                                finding['status'],
+                                finding['details'],
+                                finding['severity'],
+                                finding['methodology'],
+                                finding['manual_test'],
+                                finding['risk'],
+                                finding['category']
+                            )
+        except Exception as e:
+            pass

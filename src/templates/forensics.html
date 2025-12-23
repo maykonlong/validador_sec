@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Lab // Forense Digital</title>
+
+    <!-- Fonts (Tentar carregar, com fallback seguro) -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;400&display=swap"
+        rel="stylesheet">
+    <!-- Icons (FontAwesome CDN - se falhar, usaremos emojis/unicode como fallback via CSS) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-color: #0a0b10;
+            --card-bg: #14161f;
+            --text-main: #e0e6ed;
+            --text-muted: #94a3b8;
+
+            --accent-cyan: #00f3ff;
+            --accent-green: #00ff9d;
+            --accent-red: #ff3860;
+            --accent-purple: #e056fd;
+            --accent-warning: #ffb86c;
+
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Roboto Mono', monospace;
+            line-height: 1.6;
+            margin: 0;
+            padding-top: 80px;
+            /* Space for navbar */
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 70px;
+            background: rgba(20, 22, 31, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .brand {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link.lab {
+            color: var(--accent-purple);
+            border: 1px solid rgba(224, 86, 253, 0.3);
+        }
+
+        /* --- LAYOUT --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header-section {
+            margin-bottom: 40px;
+            border-left: 4px solid var(--accent-purple);
+            padding-left: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            /* Left panel smaller */
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- CARDS --- */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* --- UPLOAD ZONE --- */
+        .upload-zone {
+            border: 2px dashed var(--text-muted);
+            border-radius: 6px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 243, 255, 0.05);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+
+        .upload-zone i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* --- BUTTONS --- */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .btn-primary {
+            background: var(--accent-cyan);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #00d2dd;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+        }
+
+        .btn-success {
+            background: transparent;
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: var(--accent-green);
+            color: #000;
+        }
+
+        /* --- INPUTS --- */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: #0a0b10;
+            border: 1px solid var(--border-color);
+            color: var(--accent-cyan);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        /* --- UTILS --- */
+        .d-none {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-muted {
+            color: var(--text-muted);
+        }
+
+        .text-warn {
+            color: var(--accent-warning);
+        }
+
+        .text-danger {
+            color: var(--accent-red);
+        }
+
+        #file-preview {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sub-card {
+            background: #0a0b10;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-cyan);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="/" class="brand">
+            <span style="color:white">//</span> VALIDADOR_SEC <span
+                style="font-size:0.6em; vertical-align:super">v2.0</span>
+        </a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/osint" class="nav-link">OSINT</a>
+            <a href="/forensics" class="nav-link lab active">CYBER LAB</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- GUIA MANUAL -->
+        <style>
+            .guide-wrapper {
+                margin-bottom: 25px;
+                border: 1px solid var(--card-border);
+                background: rgba(10, 18, 32, 0.8);
+                border-radius: 4px;
+            }
+
+            .guide-head {
+                padding: 12px 20px;
+                background: rgba(255, 255, 255, 0.03);
+                color: var(--text-muted);
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-family: 'Roboto Mono', monospace;
+                font-size: 0.9rem;
+                border-bottom: 1px solid transparent;
+                transition: 0.3s
+            }
+
+            .guide-head:hover {
+                color: white;
+                background: rgba(255, 255, 255, 0.05)
+            }
+
+            .guide-body {
+                padding: 25px;
+                display: none;
+                font-size: 0.95rem;
+                line-height: 1.7;
+                color: #ddd;
+                border-top: 1px solid var(--card-border);
+            }
+
+            .guide-body h4 {
+                color: var(--accent-cyan);
+                margin: 20px 0 8px;
+                font-family: 'Orbitron';
+                font-size: 1rem;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .guide-body h4:first-child {
+                margin-top: 0
+            }
+
+            .guide-body ul,
+            .guide-body ol {
+                padding-left: 20px;
+                margin: 0;
+                color: #bbb
+            }
+
+            .guide-body b {
+                color: white
+            }
+        </style>
+
+        <div class="guide-wrapper">
+            <div class="guide-head"
+                onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">
+                <span>📘 <strong>MANUAL TÁTICO: FORENSE DIGITAL</strong> (Modo Operacional)</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="guide-body">
+                <h4>🎯 Missão</h4>
+                <p>Analisar artefatos digitais (Imagens, PDFs) para extrair inteligência oculta ou remover rastros
+                    sensíveis antes da publicação.</p>
+
+                <h4>⚙️ Ferramentas Disponíveis</h4>
+                <ul>
+                    <li><b>Metadados (EXIF):</b> Revela modelo da câmera, data exata e configurações técnicas.</li>
+                    <li><b>Geolocalização (GPS):</b> Extrai coordenadas latitude/longitude embutidas na foto.</li>
+                    <li><b>Esteganografia (LSB):</b> Filtro visual que revela mensagens escondidas nos bits da imagem
+                        (Ruído vs Padrão).</li>
+                    <li><b>Scrubbing (Limpeza):</b> Remove todos os metadados e gera um arquivo limpo e seguro para uso.
+                    </li>
+                    <li><b>Spoofing (Modificação):</b> Injeta dados falsos (GPS, Data) para confundir rastreamento
+                        (Counter-Intelligence).</li>
+                </ul>
+
+                <h4>⚠️ Protocolos de Risco</h4>
+                <ul>
+                    <li><b>Privacidade:</b> Fotos de celular contêm GPS exato da sua casa. Sempra faça "Scrub" antes de
+                        postar em redes sociais abertas.</li>
+                    <li><b>Malware em PDF:</b> Arquivos PDF podem conter JavaScript malicioso. O validador detecta
+                        scripts suspeitos.</li>
+                </ul>
+            </div>
+        </div>
+        <!-- HEADER -->
+        <div class="header-section">
+            <h2 style="color: var(--accent-purple)">Cyber Lab // Forense Digital</h2>
+            <p class="text-muted">Laboratório de análise de arquivos, extração de metadados e verificação de
+                integridade.</p>
+        </div>
+
+        <div class="grid">
+            <!-- COLUNA ESQUERDA: UPLOAD -->
+            <div class="col-left">
+                <div class="card">
+                    <div class="card-header" style="color: var(--accent-cyan)">
+                        <i class="fas fa-upload"></i> ENVIAR ARQUIVO
+                    </div>
+                    <div class="card-body">
+                        <!-- Drop Zone -->
+                        <div class="upload-zone" id="drop-zone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h4 style="margin-bottom:5px;">Arraste ou Clique</h4>
+                            <p class="text-muted" style="font-size:0.8rem">JPG, PNG, PDF</p>
+                            <input type="file" id="file-input">
+                        </div>
+
+                        <!-- Preview (Hidden by default) -->
+                        <div id="file-preview" class="d-none">
+                            <span id="filename-display"
+                                style="color:white; font-size:0.9rem; overflow:hidden; text-overflow:ellipsis; max-width:200px; display:inline-block;">arquivo.jpg</span>
+                            <button id="btn-clear-file"
+                                style="background:none; border:none; color:var(--accent-red); cursor:pointer; font-size:1.2rem;">&times;</button>
+                        </div>
+
+                        <!-- Actions -->
+                        <div style="margin-top: 20px;">
+
+                            <!-- SPOOFING EDITOR -->
+                            <div
+                                style="margin-bottom: 20px; background: rgba(20, 22, 31, 0.8); border: 1px solid var(--accent-warning); border-radius: 4px; padding: 15px;">
+                                <div
+                                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+                                    <h5 style="color:var(--accent-warning); margin:0;">
+                                        <i class="fas fa-edit"></i> Editor de Metadados
+                                    </h5>
+                                    <span style="font-size:0.7rem; color:var(--text-muted)">Original vs Falso</span>
+                                </div>
+
+                                <!-- Device Info -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div class="form-group">
+                                        <label class="form-label" for="spoof-make">Fabricante (Make)</label>
+                                        <input type="text" id="spoof-make" class="form-input" placeholder="ex: Canon">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="spoof-device">Modelo (Model)</label>
+                                        <input type="text" id="spoof-device" class="form-input"
+                                            placeholder="ex: EOS 5D">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="spoof-date">Data e Hora (EXIF)</label>
+                                    <input type="datetime-local" id="spoof-date" class="form-input"
+                                        style="color-scheme: dark;">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="spoof-cep">Localização (CEP ou Coordenadas)</label>
+
+                                    <!-- Busca por CEP -->
+                                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                                        <input type="text" id="spoof-cep" class="form-input"
+                                            placeholder="CEP (ex: 01310-100)" maxlength="9">
+                                        <button type="button" id="btn-cep" class="btn btn-primary"
+                                            style="width:auto; padding:0 15px;" title="Buscar Coordenadas">🔍</button>
+                                    </div>
+
+                                    <div style="display:flex; gap:10px; align-items:center;">
+                                        <input type="number" step="any" id="spoof-lat" class="form-input"
+                                            placeholder="Lat (-90 a 90)" aria-label="Latitude">
+                                        <input type="number" step="any" id="spoof-lon" class="form-input"
+                                            placeholder="Lon (-180 a 180)" aria-label="Longitude">
+                                        <button type="button" id="btn-fake-gps" class="btn btn-success"
+                                            style="width:auto; padding:0 10px; font-size:1.2rem; height:40px; margin:0;"
+                                            title="Gerar GPS Aleatório">🎲</button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="spoof-software">Software</label>
+                                    <input type="text" id="spoof-software" class="form-input"
+                                        placeholder="ex: Adobe Photoshop">
+                                </div>
+                            </div>
+
+                            <button id="btn-analyze" class="btn btn-primary" disabled>
+                                <i class="fas fa-search"></i> Analisar Metadados
+                            </button>
+                            <button id="btn-scrub" class="btn btn-success" disabled>
+                                <i class="fas fa-user-secret"></i> Limpar / Salvar Falso
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUNA DIREITA: RESULTADOS -->
+            <div class="col-right">
+
+                <!-- EMPTY STATE -->
+                <div id="empty-state" class="text-center" style="padding: 50px; opacity: 0.3;">
+                    <i class="fas fa-microscope" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                    <p>Aguardando arquivo para análise...</p>
+                </div>
+
+                <!-- LOADING -->
+                <div id="loading-state" class="text-center d-none" style="padding: 50px;">
+                    <i class="fas fa-circle-notch fa-spin"
+                        style="font-size: 3rem; color: var(--accent-cyan); margin-bottom: 20px;"></i>
+                    <p class="text-muted">Processando bytes do arquivo...</p>
+                </div>
+
+                <!-- RESULTS PANEL (Hidden) -->
+                <div id="results-panel" class="d-none">
+
+                    <!-- HASH CARD -->
+                    <div class="card">
+                        <div class="card-header" style="color: var(--accent-warning)">
+                            <i class="fas fa-fingerprint"></i> ASSINATURA DIGITAL (HASH)
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label" for="hash-md5">MD5</label>
+                                <input type="text" class="form-input" id="hash-md5" readonly onclick="this.select()">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="hash-sha256">SHA-256 (Scan)</label>
+                                <input type="text" class="form-input" id="hash-sha256" readonly onclick="this.select()">
+                            </div>
+
+                            <div style="display:flex; gap:10px; margin-top:15px;">
+                                <a id="btn-vt" href="#" target="_blank" class="btn btn-success"
+                                    style="font-size:0.8rem; padding:8px;">Checar VirusTotal</a>
+                                <a id="btn-ha" href="#" target="_blank" class="btn btn-success"
+                                    style="font-size:0.8rem; padding:8px; border-color:var(--text-muted); color:var(--text-muted)">Hybrid
+                                    Analysis</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EXIF CARD -->
+                    <div class="card" id="exif-card">
+                        <div class="card-header" style="color: var(--accent-green)" id="exif-title">
+                            <i class="fas fa-camera"></i> METADADOS & GPS
+                        </div>
+                        <div class="card-body">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div class="sub-card">
+                                    <h5 class="text-muted" style="font-size:0.8rem" id="lbl-device">📷 Dispositivo</h5>
+                                    <div id="device-info" style="color:white; font-weight:bold;">-</div>
+                                    <div id="date-info" class="text-muted" style="font-size:0.8rem">-</div>
+                                </div>
+
+                                <div class="sub-card">
+                                    <h5 class="text-muted" style="font-size:0.8rem">📍 Localização</h5>
+                                    <div id="gps-status" style="margin-bottom:5px;">-</div>
+                                    <div id="gps-coords"
+                                        style="font-size:0.8rem; font-family:monospace; color:var(--accent-cyan)"></div>
+                                </div>
+                            </div>
+
+                            <a id="btn-maps" href="#" target="_blank" class="btn btn-primary d-none"
+                                style="margin-top:15px; background:var(--accent-red)">
+                                <i class="fas fa-map-marker-alt"></i> Ver no Google Maps
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- STEGANOGRAPHY CARD -->
+                    <div class="card d-none" id="stego-card" style="margin-top: 20px;">
+                        <div class="card-header" style="color: var(--accent-purple)">
+                            <i class="fas fa-layer-group"></i> ANÁLISE ESTEGANOGRÁFICA (Visual LSB)
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted" style="font-size: 0.8rem;">
+                                Esta análise revela os bits ocultos da imagem.
+                                <br>❄️ Ruído aleatório (chiado de TV) = <strong>Provavelmente Limpo</strong>.
+                                <br>📏 Padrões geométricos ou texto = <strong>Dados Ocultos Detectados</strong>.
+                            </p>
+                            <div
+                                style="text-align: center; background: #000; padding: 10px; border-radius: 4px; border: 1px solid var(--card-border);">
+                                <img id="stego-img" src="" alt="Análise LSB"
+                                    style="max-width: 100%; max-height: 400px; object-fit: contain; image-rendering: pixelated; border: 1px solid #333;">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIC -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const analyzeBtn = document.getElementById('btn-analyze');
+            const scrubBtn = document.getElementById('btn-scrub');
+
+            let selectedFile = null;
+
+            // --- Drag & Drop ---
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) handleFile(e.target.files[0]);
+            });
+
+            function handleFile(file) {
+                selectedFile = file;
+                document.getElementById('filename-display').textContent = file.name;
+                document.getElementById('file-preview').classList.remove('d-none');
+                analyzeBtn.disabled = false;
+                scrubBtn.disabled = false;
+
+                // Visual feedback reset
+                document.getElementById('empty-state').classList.add('d-none');
+                document.getElementById('results-panel').classList.add('d-none');
+
+                // Auto-Run Analysis
+                analyzeBtn.click();
+            }
+
+            document.getElementById('btn-clear-file').addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectedFile = null;
+                fileInput.value = '';
+                document.getElementById('file-preview').classList.add('d-none');
+                analyzeBtn.disabled = true;
+                scrubBtn.disabled = true;
+                document.getElementById('empty-state').classList.remove('d-none');
+                document.getElementById('results-panel').classList.add('d-none');
+            });
+
+            // --- FAKE GPS ---
+            document.getElementById('btn-fake-gps')?.addEventListener('click', () => {
+                const lat = (Math.random() * 180 - 90).toFixed(6);
+                const lon = (Math.random() * 360 - 180).toFixed(6);
+                document.getElementById('spoof-lat').value = lat;
+                document.getElementById('spoof-lon').value = lon;
+            });
+
+            // --- BUSCA CEP ---
+            document.getElementById('btn-cep')?.addEventListener('click', async () => {
+                const cepInput = document.getElementById('spoof-cep');
+                const btn = document.getElementById('btn-cep');
+                const cep = cepInput.value.replace(/\D/g, '');
+
+                if (cep.length !== 8) {
+                    alert('CEP inválido. Digite 8 números.');
+                    return;
+                }
+
+                const oldText = btn.innerHTML;
+                btn.innerHTML = '...';
+                btn.disabled = true;
+
+                try {
+                    // Consulta BrasilAPI via Proxy (Bypass CORS)
+                    const resp = await fetch(`/proxy/cep/${cep}`);
+                    if (!resp.ok) throw new Error('CEP não encontrado');
+
+                    const data = await resp.json();
+
+                    // Verificar se coordenadas existem DE FATO
+                    if (data.location && data.location.coordinates && data.location.coordinates.latitude) {
+                        const coords = data.location.coordinates;
+                        document.getElementById('spoof-lat').value = coords.latitude;
+                        document.getElementById('spoof-lon').value = coords.longitude;
+                    } else {
+                        // FALLBACK: Tentar Nominatim (OpenStreetMap) usando o endereço
+                        const addressQuery = `${data.street}, ${data.city}, ${data.state}, Brazil`;
+                        btn.innerHTML = 'Rebuscando...';
+
+                        try {
+                            const nomUrl = `/proxy/nominatim?q=${encodeURIComponent(addressQuery)}`;
+                            const nomResp = await fetch(nomUrl);
+                            const nomData = await nomResp.json();
+
+                            if (nomData && nomData.length > 0) {
+                                document.getElementById('spoof-lat').value = nomData[0].lat;
+                                document.getElementById('spoof-lon').value = nomData[0].lon;
+                            } else {
+                                throw new Error("GPS não encontrado no Fallback");
+                            }
+                        } catch (err2) {
+                            const addr = data.street ? `${data.street}, ` : '';
+                            alert(`📍 Endereço encontrado: ${addr}${data.city}-${data.state}.\n\n⚠️ GPS não disponível nas bases públicas (BrasilAPI/OSM) para este local específico.`);
+                        }
+                    }
+                } catch (e) {
+                    alert('Erro na busca: ' + e.message);
+                } finally {
+                    btn.innerHTML = oldText;
+                    btn.disabled = false;
+                }
+            });
+
+            // --- ANALYZE ---
+            analyzeBtn.addEventListener('click', async () => {
+                if (!selectedFile) return;
+
+                document.getElementById('loading-state').classList.remove('d-none');
+                document.getElementById('results-panel').classList.add('d-none');
+
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                try {
+                    const resp = await fetch('/forensics/analyze', { method: 'POST', body: formData });
+                    const data = await resp.json();
+
+                    document.getElementById('loading-state').classList.add('d-none');
+                    displayResults(data);
+
+                } catch (e) {
+                    document.getElementById('loading-state').classList.add('d-none');
+                    alert('Erro: ' + e.message);
+                }
+            });
+
+            // --- SCRUB ---
+            scrubBtn.addEventListener('click', async () => {
+                if (!selectedFile) return;
+
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                // Collect Spoofing Data
+                const sMake = document.getElementById('spoof-make').value;
+                const sDevice = document.getElementById('spoof-device').value;
+                const sDate = document.getElementById('spoof-date').value;
+                const sLat = document.getElementById('spoof-lat').value;
+                const sLon = document.getElementById('spoof-lon').value;
+                const sSoft = document.getElementById('spoof-software').value;
+
+                if (sMake) formData.append('spoof_make', sMake);
+                if (sDevice) formData.append('spoof_device', sDevice);
+                if (sDate) formData.append('spoof_date', sDate);
+                if (sLat) formData.append('spoof_lat', sLat);
+                if (sLon) formData.append('spoof_lon', sLon);
+                if (sSoft) formData.append('spoof_software', sSoft);
+
+                // DEBUG: Log dos valores coletados
+                console.log('DEBUG SPOOFING:', {
+                    make: sMake, device: sDevice, date: sDate,
+                    lat: sLat, lon: sLon, software: sSoft
+                });
+
+                // Feedback visual
+                const oldText = scrubBtn.innerHTML;
+                scrubBtn.textContent = "Processando...";
+                scrubBtn.disabled = true;
+
+                try {
+                    const resp = await fetch('/forensics/scrub', { method: 'POST', body: formData });
+                    if (resp.ok) {
+                        const blob = await resp.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        // Detectar se foi spoof ou clean pelo prefixo do arquivo retornado pelo server seria ideal
+                        // mas podemos usar um genérico aqui dependendo se houve input
+                        a.download = (sDevice || sDate || sSoft) ? "spoofed_" + selectedFile.name : "clean_" + selectedFile.name;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                    } else {
+                        alert('Erro ao processar arquivo: ' + await resp.text());
+                    }
+                } catch (e) {
+                    alert('Erro de conexão: ' + e.message);
+                } finally {
+                    scrubBtn.innerHTML = oldText;
+                    scrubBtn.disabled = false;
+                }
+            });
+
+            function displayResults(data) {
+                document.getElementById('results-panel').classList.remove('d-none');
+
+                // AUTO-FILL SPOOFING FIELDS (Preenche com dados ORIGINAIS para edição fácil)
+                if (data.type === 'image' && data.metadata) {
+                    const m = data.metadata;
+
+                    if (document.getElementById('spoof-make'))
+                        document.getElementById('spoof-make').value = m.make || "";
+
+                    if (document.getElementById('spoof-device'))
+                        document.getElementById('spoof-device').value = m.model || m.device || "";
+
+                    if (document.getElementById('spoof-software'))
+                        document.getElementById('spoof-software').value = m.software || "";
+
+                    // Date Format: YYYY-MM-DDTHH:MM (Robust Parser)
+                    if (m.date_original && document.getElementById('spoof-date')) {
+                        try {
+                            const raw = m.date_original.trim();
+                            // Match padrão EXIF: YYYY:MM:DD HH:MM... aceitando T ou espaço
+                            const match = raw.match(/^(\d{4})[:/-](\d{2})[:/-](\d{2})[T\s](\d{2})[:/-](\d{2})/);
+
+                            if (match) {
+                                document.getElementById('spoof-date').value = `${match[1]}-${match[2]}-${match[3]}T${match[4]}:${match[5]}`;
+                            } else {
+                                // Fallback
+                                console.log("Data fora do padrão EXIF:", raw);
+                            }
+                        } catch (e) { console.error("Erro parsing date", e); }
+                    }
+
+                    if (m.gps) {
+                        if (document.getElementById('spoof-lat') && m.gps.latitude != null)
+                            document.getElementById('spoof-lat').value = m.gps.latitude;
+                        if (document.getElementById('spoof-lon') && m.gps.longitude != null)
+                            document.getElementById('spoof-lon').value = m.gps.longitude;
+                    }
+                }
+
+                // Hash
+                document.getElementById('hash-md5').value = data.hashes.md5;
+                document.getElementById('hash-sha256').value = data.hashes.sha256;
+                document.getElementById('btn-vt').href = data.threat_intel.virustotal;
+                document.getElementById('btn-ha').href = data.threat_intel.hybrid_analysis;
+
+                // EXIF
+                if (data.type === 'image' && data.metadata) {
+                    document.getElementById('exif-card').classList.remove('d-none');
+                    document.getElementById('exif-title').textContent = "📸 METADADOS & GPS";
+
+                    const meta = data.metadata;
+
+                    // Device Info
+                    const devInfo = meta.device ? meta.device : "Desconhecido";
+                    document.getElementById('device-info').innerHTML = devInfo;
+                    document.getElementById('lbl-device').textContent = "📷 Dispositivo";
+                    document.getElementById('date-info').textContent = meta.date_original || "Sem data";
+
+                    // GPS Info
+                    if (meta.gps) {
+                        document.getElementById('gps-status').innerHTML = "<span class='text-danger'>⚠️ GPS ENCONTRADO</span>";
+                        document.getElementById('gps-coords').textContent = `${meta.gps.latitude.toFixed(5)}, ${meta.gps.longitude.toFixed(5)}`;
+
+                        const btnMaps = document.getElementById('btn-maps');
+                        btnMaps.href = meta.gps.maps_link;
+                        btnMaps.classList.remove('d-none');
+                    } else {
+                        document.getElementById('gps-status').textContent = "Sem dados de GPS";
+                        document.getElementById('gps-coords').textContent = "";
+                        document.getElementById('btn-maps').classList.add('d-none');
+                    }
+                } else if (data.type === 'document') {
+                    // PDF Support
+                    document.getElementById('exif-card').classList.remove('d-none');
+                    document.getElementById('exif-title').textContent = "📄 METADADOS PDF";
+
+                    const meta = data.metadata;
+
+                    // Reutilizar card de Device para info do Autor/Software
+                    document.getElementById('lbl-device').textContent = "✍️ Autor / Software";
+                    let docInfo = "";
+                    if (meta.Author) docInfo += `<div style='color:#fff'>${meta.Author}</div>`;
+                    if (meta.Creator) docInfo += `<div style='color:var(--text-muted); font-size:0.8rem'>App: ${meta.Creator}</div>`;
+                    if (meta.Producer) docInfo += `<div style='color:var(--text-muted); font-size:0.8rem'>Lib: ${meta.Producer}</div>`;
+
+                    document.getElementById('device-info').innerHTML = docInfo || "Sem dados de autoria";
+                    document.getElementById('date-info').textContent = meta['Creation Date'] || "Data desconhecida";
+
+                    // Reutilizar card de GPS para Stats do PDF
+                    document.getElementById('gps-status').innerHTML = "📊 Estatísticas";
+                    let stats = `<div>Páginas: <strong style='color:#fff'>${meta.Pages}</strong></div>`;
+                    stats += `<div>Encriptado: <strong style='color:${meta.Encrypted ? "#ff5555" : "#00ff9d"}'>${meta.Encrypted ? "SIM" : "NÃO"}</strong></div>`;
+                    if (meta.Suspicious) stats += `<div style='color:#ff5555; margin-top:5px'>${meta.Suspicious}</div>`;
+
+                    document.getElementById('gps-coords').innerHTML = stats;
+                    document.getElementById('btn-maps').classList.add('d-none');
+
+                } else {
+                    // Not image or no metadata
+                    document.getElementById('exif-card').classList.add('d-none');
+                }
+
+                // Stego Analysis Check (LSB Visual)
+                const stegoCard = document.getElementById('stego-card');
+                if (data.metadata && data.metadata.stego_analysis) {
+                    stegoCard.classList.remove('d-none');
+                    document.getElementById('stego-img').src = data.metadata.stego_analysis;
+                } else {
+                    if (stegoCard) stegoCard.classList.add('d-none');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

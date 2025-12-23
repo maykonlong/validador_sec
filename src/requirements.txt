@@ -1,0 +1,34 @@
+
+# === CORE FRAMEWORK ===
+flask>=3.0.0
+flask-limiter>=3.5.0
+requests>=2.31.0
+
+# === REPORTS & FILES ===
+fpdf==1.7.2
+reportlab>=4.0.0
+Pillow>=10.0.0
+pypdf>=3.17.0
+python-docx>=1.1.0
+
+# === SYSTEM ===
+psutil>=5.9.0
+
+# === DOMAIN & NETWORKING ===
+python-whois>=0.8.0
+dnspython>=2.4.0
+pyOpenSSL>=23.2.0
+phonenumbers>=8.13.0
+
+# === WEB ANALYSIS ===
+beautifulsoup4>=4.12.0
+
+# === OSINT POWERHOUSE ===
+maigret>=0.4.0
+sherlock-project>=0.14.0
+shodan>=1.30.0
+googlesearch-python>=1.2.0
+
+# === INFRA & RED TEAM ===
+python-nmap>=0.7.0
+# pymetasploit3>=1.0.0 (Optional, removed to avoid deps issues if not used yet)

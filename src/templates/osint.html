@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT - Validador SEC</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@300;400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/osint.css') }}">
+    <style>
+        :root {
+            --accent-cyan: #00f3ff;
+            --accent-green: #00ff9d;
+            --accent-purple: #e056fd;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: #0a0b10;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* NAVBAR CYBERPUNK (Idêntica ao Lab) */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 70px;
+            background: rgba(20, 22, 31, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-sizing: border-box;
+        }
+
+        .brand {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-family: 'Orbitron', sans-serif;
+            /* Fonte Tech */
+            letter-spacing: 1px;
+        }
+
+        .nav-link:hover {
+            color: #e0e6ed;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Estilo Ativo (Box Verde no OSINT) */
+        .nav-link.active {
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 255, 157, 0.3);
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .nav-link.lab-link {
+            color: var(--accent-purple);
+        }
+
+        /* Container Ajustado */
+        .osint-container {
+            padding-top: 100px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Orbitron', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="brand">
+            <span style="color:white">//</span> VALIDADOR_SEC <span
+                style="font-size:0.6em; vertical-align:super">v2.0</span>
+        </a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Dashboard</a>
+            <a href="/osint" class="nav-link active">OSINT</a>
+            <a href="/forensics" class="nav-link lab-link">CYBER LAB</a>
+        </div>
+    </nav>
+
+    <div class="osint-container">
+        <!-- GUIA TÁTICO OSINT -->
+        <style>
+            .guide-osint {
+                margin-bottom: 30px;
+                border: 1px solid rgba(0, 255, 157, 0.3);
+                background: rgba(0, 20, 10, 0.8);
+                border-radius: 4px;
+            }
+
+            .guide-head {
+                padding: 12px 20px;
+                background: rgba(0, 255, 157, 0.05);
+                color: #ccc;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                font-family: 'Roboto Mono';
+                font-size: 0.9rem;
+            }
+
+            .guide-body {
+                padding: 25px;
+                display: none;
+                font-size: 0.95rem;
+                line-height: 1.6;
+                color: #ddd;
+                border-top: 1px solid rgba(0, 255, 157, 0.3);
+            }
+
+            .guide-body h4 {
+                color: #00ff9d;
+                margin: 15px 0 5px;
+                font-family: 'Orbitron';
+            }
+
+            .guide-body ul {
+                padding-left: 20px;
+                color: #bbb;
+            }
+        </style>
+        <div class="guide-osint">
+            <div class="guide-head"
+                onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'">
+                <span>📘 <strong>MANUAL TÁTICO: OPERAÇÕES OSINT</strong> (Inteligência de Fontes Abertas)</span>
+                <span>▼</span>
+            </div>
+            <div class="guide-body">
+                <h4>🎯 Objetivo</h4>
+                <p>Coletar informações públicas disponíveis na internet (Open Source Intelligence) para mapear a pegada
+                    digital de um alvo.</p>
+                <h4>⚙️ Módulos</h4>
+                <ul>
+                    <li><strong>Sherlock/Maigret (Username):</strong> Busca o mesmo nome de usuário em +500 redes
+                        sociais. Útil para encontrar perfis ocultos.</li>
+                    <li><strong>Breach Check (Leak):</strong> Verifica se o e-mail vazou em megavazamentos antigos
+                        (HIBP/Databases).</li>
+                </ul>
+                <h4>⚠️ Ética Operacional</h4>
+                <p>OSINT não é hacking. Você só acessa o que é público. Mesmo assim, investigações em terceiros requerem
+                    <strong>autorização</strong>, pois podem violar expectativas de privacidade (Doxing).
+                </p>
+            </div>
+        </div>
+        <!-- Hero Section -->
+        <section class="osint-hero">
+            <h1>🕵️ Centro de Operações OSINT</h1>
+            <p>Open Source Intelligence - Investigações Avançadas</p>
+        </section>
+
+        <!-- Mission Selector -->
+        <section class="mission-selector" id="mission-selector">
+            <div class="mission-grid">
+                <div class="mission-card" data-mission="email">
+                    <div class="icon">📧</div>
+                    <h3>Investigação de E-mail</h3>
+                    <p>Vazamentos, contas associadas e análise de domínio</p>
+                </div>
+
+                <div class="mission-card" data-mission="domain">
+                    <div class="icon">🌐</div>
+                    <h3>Auditoria de Domínio</h3>
+                    <p>WHOIS, DNS, SSL, phishing e geolocalização</p>
+                </div>
+
+                <div class="mission-card" data-mission="phishing">
+                    <div class="icon">🎣</div>
+                    <h3>Detecção de Phishing</h3>
+                    <p>Domínios falsos, typosquatting e takedown</p>
+                </div>
+
+                <div class="mission-card" data-mission="person">
+                    <div class="icon">👤</div>
+                    <h3>Investigação de Pessoa</h3>
+                    <p>Redes sociais e correlação de dados</p>
+                </div>
+
+                <div class="mission-card" data-mission="phone">
+                    <div class="icon">📱</div>
+                    <h3>Análise de Telefone</h3>
+                    <p>Operadora, região e vazamentos</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Investigation Panel -->
+        <section class="investigation-panel" id="investigation-panel">
+            <div class="panel-header">
+                <h2 id="mission-title">Missão</h2>
+                <button class="btn-back" id="btn-back">← Voltar</button>
+            </div>
+
+            <form id="osint-form">
+                <input type="hidden" id="mission-type" name="mission_type">
+
+                <!-- Dynamic Fields Container -->
+                <div id="dynamic-fields"></div>
+
+                <!-- Advanced Options -->
+                <details class="advanced-options" style="margin-top: 1.5rem;">
+                    <summary style="cursor: pointer; color: var(--osint-text-muted); margin-bottom: 1rem;">⚙️ Opções
+                        Avançadas</summary>
+                    <div id="advanced-fields"></div>
+                </details>
+
+                <!-- CSRF Token -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-primary">
+                    🚀 Iniciar Investigação
+                </button>
+            </form>
+        </section>
+
+        <!-- Results Panel -->
+        <section class="results-panel" id="results-panel">
+            <!-- Progress Indicator -->
+            <div class="progress-indicator" id="progress-indicator">
+                <div class="progress-bar" id="progress-bar"></div>
+                <p id="progress-status">Iniciando...</p>
+            </div>
+
+            <!-- Results Container -->
+            <div id="results-container" style="display: none;">
+                <div class="result-section">
+                    <h3>📊 Resumo da Investigação</h3>
+                    <div id="summary-content"></div>
+                </div>
+
+                <div class="result-section">
+                    <h3>🔍 Descobertas</h3>
+                    <div id="findings-content"></div>
+                </div>
+
+                <div class="result-section" id="recommendations-section" style="display: none;">
+                    <h3>💡 Recomendações</h3>
+                    <div id="recommendations-content"></div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons" style="display: none;" id="action-buttons">
+                <button class="btn-download-pdf" id="btn-download-pdf">📄 Baixar PDF</button>
+                <button class="btn-download-json" id="btn-download-json">📊 Exportar JSON</button>
+                <button class="btn-new-investigation" id="btn-new-investigation">🔄 Nova Investigação</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- JavaScript Controller -->
+    <script src="{{ url_for('static', filename='js/osint-controller.js') }}?v={{ timestamp }}"></script>
+    <!-- AUTH MODAL -->
+    <div id="authModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:99999; justify-content:center; align-items:center;">
+        <div
+            style="background:#0a0b10; padding:40px; border:2px solid #00ff9d; max-width:600px; text-align:center; border-radius:8px;">
+            <h2 style="color:#00ff9d; margin-top:0; font-family:'Orbitron'">⚠️ PROTOCOLO DE AUTORIZAÇÃO</h2>
+            <p style="color:#ddd; line-height:1.6; font-size:1.1rem;">
+                Executar varreduras OSINT em alvos terceiros pode violar políticas de privacidade e constituir 'Doxing'.
+            </p>
+            <div
+                style="background:rgba(0,255,157,0.05); padding:15px; border-left:3px solid #00ff9d; margin:20px 0; text-align:left; color:#9fffd4;">
+                <strong>DECLARAÇÃO:</strong><br>
+                Afirmo que tenho autorização para investigar este alvo.
+            </div>
+            <div style="display:flex; gap:15px; justify-content:center; margin-top:30px;">
+                <button onclick="document.getElementById('authModal').style.display='none'"
+                    style="background:#222; color:#fff; border:1px solid #444; padding:15px 30px; cursor:pointer;">ABORTAR</button>
+                <button onclick="confirmAuth()"
+                    style="background:#00ff9d; color:#000; border:none; padding:15px 30px; font-weight:bold; cursor:pointer;">CONFIRMAR
+                    INTENÇÃO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const osintFormAuth = document.getElementById('osint-form');
+        let authOSINTGranted = false;
+
+        if (osintFormAuth) {
+            osintFormAuth.addEventListener('submit', function (e) {
+                if (!authOSINTGranted) {
+                    e.preventDefault();
+                    document.getElementById('authModal').style.display = 'flex';
+                }
+            });
+        }
+
+        function confirmAuth() {
+            authOSINTGranted = true;
+            document.getElementById('authModal').style.display = 'none';
+            if (osintFormAuth.requestSubmit) {
+                osintFormAuth.requestSubmit();
+            } else {
+                osintFormAuth.submit();
+            }
+        }
+    </script>
+</body>
+
+</html>

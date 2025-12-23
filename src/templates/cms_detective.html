@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CMS Detective | Cyber Lab Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050a14;
+            --panel: #111;
+            --accent: #00aaff;
+            --text: #eee;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Roboto Mono', monospace;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-family: 'Orbitron';
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            border: 1px solid var(--accent);
+            color: #fff;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Orbitron';
+        }
+
+        .result-box {
+            background: var(--panel);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .vuln {
+            color: #ff5555;
+            margin: 5px 0;
+        }
+
+        .user {
+            color: #00ff00;
+            margin: 5px 0;
+        }
+
+        /* GUIA TÁTICO */
+        .guide-box {
+            border: 1px solid #333;
+            background: #0a0a0a;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .guide-header {
+            background: #1a1a1a;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .guide-content {
+            padding: 15px;
+            display: none;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        .guide-content h4 {
+            color: var(--accent);
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- GUIA TÁTICO -->
+        <div class="guide-box">
+            <div class="guide-header" onclick="toggleGuide()">
+                <span>📘 <strong>MANUAL DE OPERAÇÕES: CMS DETECTIVE</strong></span>
+                <span>▼</span>
+            </div>
+            <div class="guide-content" id="guideContent">
+                <h4>🎯 Para que serve?</h4>
+                <p>Scanner especializado em <strong>WordPress</strong>. Identifica versões desatualizadas, usuários
+                    expostos e configurações inseguras.</p>
+
+                <h4>⚙️ Como usar?</h4>
+                <ol>
+                    <li>Insira a URL do site alvo (ex: <code>http://site.com</code>).</li>
+                    <li>Clique em "INICIAR VARREDURA".</li>
+                    <li>O sistema tentará identificar se é WordPress e buscar falhas.</li>
+                </ol>
+
+                <h4>⚠️ Principais Riscos Detectados</h4>
+                <ul>
+                    <li><strong>User Enumeration (Usuários Expostos):</strong> Permite que o atacante crie uma lista de
+                        logins válidos para tentar força bruta (Brute Force) depois.</li>
+                    <li><strong>XML-RPC Habilitado:</strong> Interface antiga usada para ataques de amplificação DDoS e
+                        força bruta massiva.</li>
+                    <li><strong>Versão Exposta:</strong> Revela ao atacante se o site tem vulnerabilidades conhecidas
+                        (CVEs) para aquela versão específica.</li>
+                </ul>
+
+                <h4>🛡️ Por que corrigir?</h4>
+                <p>WordPress é o alvo #1 da web. Ocultar usuários e desativar XML-RPC reduz drasticamente a superfície
+                    de ataque automatizada.</p>
+            </div>
+        </div>
+
+        <h1>🧩 CMS DETECTIVE (WP)</h1>
+        <input type="text" id="urlInput" placeholder="http://alvo-wordpress.com">
+        <button onclick="requestScanAuth()">INICIAR VARREDURA</button>
+
+        <div class="result-box" id="result-area">
+            <h3>Relatório de Reconhecimento</h3>
+            <div id="scan-content"></div>
+        </div>
+
+        <!-- AUTH MODAL -->
+        <div id="authModal"
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:99999; justify-content:center; align-items:center;">
+            <div
+                style="background:#0a0a0a; padding:40px; border:2px solid var(--accent); max-width:600px; text-align:center; border-radius:8px;">
+                <h2 style="color:var(--accent); margin-top:0; font-family:'Orbitron'">⚠️ CONFIRMAÇÃO NECESSÁRIA</h2>
+                <p style="color:#ddd; line-height:1.6; font-size:1.1rem;">
+                    O CMS Detective fará requisições ativas ao site alvo para enumerar usuários e plugins.
+                </p>
+                <div
+                    style="background:rgba(255,255,255,0.05); padding:15px; border-left:3px solid var(--accent); margin:20px 0; text-align:left; color:#ccc;">
+                    <strong>DECLARAÇÃO:</strong><br>
+                    Eu tenho permissão para escanear este site.
+                </div>
+                <div style="display:flex; gap:15px; justify-content:center; margin-top:30px;">
+                    <button onclick="document.getElementById('authModal').style.display='none'"
+                        style="background:#222; color:#fff; border:1px solid #444; padding:15px 30px; cursor:pointer;">CANCELAR</button>
+                    <button onclick="confirmScan()"
+                        style="background:var(--accent); color:#000; border:none; padding:15px 30px; font-weight:bold; cursor:pointer;">CONFIRMAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleGuide() {
+            const c = document.getElementById('guideContent');
+            c.style.display = c.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function requestScanAuth() {
+            const url = document.getElementById('urlInput').value;
+            if (!url) return alert("Digite uma URL primeiro.");
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        function confirmScan() {
+            document.getElementById('authModal').style.display = 'none';
+            scan();
+        }
+
+        async function scan() {
+            const url = document.getElementById('urlInput').value;
+            if (!url) return;
+
+            const btn = document.querySelector('button');
+            btn.innerHTML = "VARRENDO ALVO...";
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('url', url);
+
+                const resp = await fetch('/tools/cms-scan', { method: 'POST', body: formData });
+                const data = await resp.json();
+
+                document.getElementById('result-area').style.display = 'block';
+                const content = document.getElementById('scan-content');
+
+                if (!data.is_wordpress) {
+                    content.innerHTML = "<div style='color:#ffff00'>⚠️ Alvo não parece ser WordPress ou está bem protegido.</div>";
+                    if (data.vulns.length > 0) content.innerHTML += `<div class='vuln'>${data.vulns[0]}</div>`;
+                } else {
+                    let html = `<div><strong>Versão Detectada:</strong> ${data.version || 'Oculta'}</div>`;
+
+                    if (data.users.length > 0) {
+                        html += `<h4>👥 Usuários Identificados:</h4>`;
+                        data.users.forEach(u => html += `<div class='user'>Found User: <strong>${u}</strong></div>`);
+                    } else {
+                        html += `<div>✅ Enumeração de Usuários bloqueada.</div>`;
+                    }
+
+                    if (data.vulns.length > 0) {
+                        html += `<h4>⚠️ Vulnerabilidades / Configurações:</h4>`;
+                        data.vulns.forEach(v => html += `<div class='vuln'>${v}</div>`);
+                    }
+
+                    content.innerHTML = html;
+                }
+
+            } catch (e) {
+                alert("Erro: " + e.message);
+            } finally {
+                btn.innerHTML = "INICIAR VARREDURA";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

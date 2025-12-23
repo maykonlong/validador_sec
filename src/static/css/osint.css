@@ -1,0 +1,419 @@
+/* ==========================================
+   OSINT MODULE - CYBER SECURITY THEME
+   ========================================== */
+
+:root {
+    /* Cyber Security Color Palette */
+    --osint-primary: #00ff88;
+    --osint-secondary: #0099ff;
+    --osint-accent: #ff0088;
+    --osint-dark: #0a0e27;
+    --osint-dark-light: #1a1f3a;
+    --osint-dark-lighter: #252b4a;
+    --osint-text: #e0e6f0;
+    --osint-text-muted: #8892b0;
+
+    /* Status Colors */
+    --osint-success: #00ff88;
+    --osint-warning: #ffaa00;
+    --osint-danger: #ff0055;
+    --osint-info: #00aaff;
+}
+
+/* ==========================================
+   LAYOUT BASE
+   ========================================== */
+
+.osint-container {
+    min-height: 100vh;
+    background: var(--osint-dark);
+    color: var(--osint-text);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    padding: 2rem;
+}
+
+/* ==========================================
+   HERO / HEADER
+   ========================================== */
+
+.osint-hero {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+}
+
+.osint-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--osint-primary), var(--osint-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.osint-hero p {
+    font-size: 1.2rem;
+    color: var(--osint-text-muted);
+}
+
+/* ==========================================
+   MISSION SELECTOR
+   ========================================== */
+
+.mission-selector {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.mission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.mission-card {
+    background: var(--osint-dark-light);
+    border: 2px solid transparent;
+    border-radius: 16px;
+    padding: 2rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.mission-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--osint-primary) 0%, var(--osint-secondary) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 0;
+}
+
+.mission-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--osint-primary);
+    box-shadow: 0 20px 40px rgba(0, 255, 136, 0.2);
+}
+
+.mission-card:hover::before {
+    opacity: 0.1;
+}
+
+.mission-card>* {
+    position: relative;
+    z-index: 1;
+}
+
+.mission-card .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.mission-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+    color: var(--osint-text);
+}
+
+.mission-card p {
+    font-size: 0.9rem;
+    color: var(--osint-text-muted);
+    line-height: 1.5;
+}
+
+/* ==========================================
+   INVESTIGATION PANEL
+   ========================================== */
+
+.investigation-panel {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: var(--osint-dark-light);
+    border-radius: 16px;
+    padding: 2rem;
+    display: none;
+}
+
+.investigation-panel.active {
+    display: block;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--osint-dark-lighter);
+}
+
+.panel-header h2 {
+    font-size: 1.8rem;
+    color: var(--osint-primary);
+}
+
+.btn-back {
+    background: transparent;
+    border: 2px solid var(--osint-text-muted);
+    color: var(--osint-text-muted);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    border-color: var(--osint-primary);
+    color: var(--osint-primary);
+}
+
+/* ==========================================
+   FORMS
+   ========================================== */
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--osint-text);
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--osint-dark-lighter);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    color: var(--osint-text);
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--osint-primary);
+    box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.form-check input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 0.75rem;
+    cursor: pointer;
+}
+
+.form-check label {
+    cursor: pointer;
+    color: var(--osint-text-muted);
+    font-size: 0.95rem;
+}
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
+.btn-primary {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--osint-primary), var(--osint-secondary));
+    border: none;
+    border-radius: 8px;
+    color: var(--osint-dark);
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1rem;
+}
+
+.btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================
+   PROGRESS INDICATOR
+   ========================================== */
+
+.progress-indicator {
+    margin: 2rem 0;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 8px;
+    background: linear-gradient(90deg, var(--osint-primary), var(--osint-secondary));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    animation: pulse-progress 2s infinite;
+}
+
+@keyframes pulse-progress {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+#progress-status {
+    margin-top: 1rem;
+    text-align: center;
+    color: var(--osint-text-muted);
+    font-size: 0.95rem;
+}
+
+/* ==========================================
+   RESULTS PANEL
+   ========================================== */
+
+.results-panel {
+    max-width: 1000px;
+    margin: 2rem auto;
+    display: none;
+}
+
+.results-panel.active {
+    display: block;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+#results-container {
+    background: var(--osint-dark-light);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.result-section {
+    border-left: 4px solid var(--osint-primary);
+    padding-left: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.result-section h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: var(--osint-primary);
+}
+
+.finding-card {
+    background: var(--osint-dark-lighter);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--osint-info);
+}
+
+.finding-card.severity-high {
+    border-left-color: var(--osint-danger);
+}
+
+.finding-card.severity-warning {
+    border-left-color: var(--osint-warning);
+}
+
+.finding-card.severity-info {
+    border-left-color: var(--osint-info);
+}
+
+/* ==========================================
+   ACTION BUTTONS
+   ========================================== */
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.action-buttons button {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1.5rem;
+    background: var(--osint-dark-lighter);
+    border: 2px solid var(--osint-primary);
+    border-radius: 8px;
+    color: var(--osint-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-buttons button:hover {
+    background: var(--osint-primary);
+    color: var(--osint-dark);
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+    .osint-container {
+        padding: 1rem;
+    }
+
+    .osint-hero h1 {
+        font-size: 2rem;
+    }
+
+    .mission-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .investigation-panel,
+    .results-panel {
+        padding: 1rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .action-buttons button {
+        width: 100%;
+    }
+}

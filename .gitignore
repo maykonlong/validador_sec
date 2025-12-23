@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+ENV/
+.integrity
+latest_report.pdf
+bin/wins/
+*.log
+.vscode/
+.idea/
+downloads/
+temp/
